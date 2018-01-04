@@ -17,7 +17,7 @@ public class ProductUser {
     private Date dateEndCommercialWarranty;
     private Date dateEndConstructorWarranty;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 

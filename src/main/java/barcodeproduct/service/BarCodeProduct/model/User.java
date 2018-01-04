@@ -1,8 +1,7 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name="user")
@@ -15,6 +14,15 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<ProductUser> productUsers;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "username", referencedColumnName = "username"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_name", referencedColumnName = "name"))
+    private Set<Role> roles;
 
     public User() {
     }
@@ -50,4 +58,25 @@ public class User {
     public void setProductUsers(Set<ProductUser> productUsers) {
         this.productUsers = productUsers;
     }
+
+    /**
+     * Add a role for user
+     * @param roleName
+     */
+    private void addRole(String roleName){
+        //check if the set exists or to initialize it
+        if(this.roles==null){
+            roles = new HashSet<Role>();
+        }
+        Role role = new Role();
+        role.setName(roleName);
+        if(!roles.contains(role)){
+            roles.add(role);
+        }
+    }
+
+    public void addUserRole(){
+        addRole("ROLE_USER");
+    }
+
 }
