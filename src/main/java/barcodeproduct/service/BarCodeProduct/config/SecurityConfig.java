@@ -12,7 +12,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableWebSecurity
 @EnableAutoConfiguration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -38,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/v1/product/").permitAll()
+                .antMatchers("/v1/product/","/v1/user").permitAll()
                 .antMatchers("/v1/user/**").access("hasRole('USER')")
                 .and()
                 .httpBasic()
