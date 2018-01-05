@@ -1,7 +1,10 @@
 package barcodeproduct.service.BarCodeProduct.api;
 
+import barcodeproduct.service.BarCodeProduct.controller.ProductController;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,7 +16,7 @@ public class ProductLayer {
 
     private static final String REST_SERVICE_URI = "https://api.productlayer.com/0.5/" ;
     private static final String API_KEY = "6f44e61e-6f02-488f-b731-25c0ce9e6b43" ;
-
+    public static final Logger logger = LoggerFactory.getLogger(ProductLayer.class);
 
     public JsonObject getProductWithGtin(String gtin) {
         RestTemplate restTemplate = new RestTemplate();
@@ -26,8 +29,8 @@ public class ProductLayer {
             return jsonObject;
         }
         catch (final HttpClientErrorException e) {
-            System.out.println(e.getStatusCode());
-            System.out.println(e.getResponseBodyAsString());
+            logger.error(e.getStatusCode().getReasonPhrase());
+            logger.error(e.getResponseBodyAsString());
         }
         return null;
     }
