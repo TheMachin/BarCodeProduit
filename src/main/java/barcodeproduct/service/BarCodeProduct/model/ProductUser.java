@@ -1,11 +1,17 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Entity(name = "productUser")
-public class ProductUser {
+public class ProductUser implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,15 +23,13 @@ public class ProductUser {
     private Date dateEndCommercialWarranty;
     private Date dateEndConstructorWarranty;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @OneToMany(mappedBy = "productUser")
     private Set<Document> documents;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gtin")
     private Product gtin;
 
     @ManyToOne(fetch = FetchType.LAZY)

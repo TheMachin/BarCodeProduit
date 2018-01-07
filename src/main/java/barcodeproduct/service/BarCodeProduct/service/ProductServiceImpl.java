@@ -34,7 +34,13 @@ public class ProductServiceImpl implements ProductService{
             logger.error("product null");
             return null;
         }
-        Compagny compagny = compagnyQuery.save(product.getCompagny());
+
+        Compagny compagny = compagnyQuery.findOne(product.getCompagny().getName());
+        if(compagny == null){
+            compagny = new Compagny();
+            compagny.setName(product.getCompagny().getName());
+            compagny = compagnyQuery.save(compagny);
+        }
         if(compagny == null){
             logger.error("compagny null");
             return null;

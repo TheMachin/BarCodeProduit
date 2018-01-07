@@ -1,22 +1,24 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
+import com.fasterxml.jackson.annotation.*;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import java.io.Serializable;
 import java.util.Set;
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="name", scope = String.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity(name = "compagny")
-public class Compagny {
+public class Compagny implements Serializable{
 
     @Id
     private String name;
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "compagny")
     private Set<Product> products;
-
-    @OneToMany(mappedBy = "compagny")
-    private Set<Shop> shops;
 
     public Compagny(){
 
@@ -36,13 +38,5 @@ public class Compagny {
 
     public void setProducts(Set<Product> products) {
         this.products = products;
-    }
-
-    public Set<Shop> getShops() {
-        return shops;
-    }
-
-    public void setShops(Set<Shop> shops) {
-        this.shops = shops;
     }
 }

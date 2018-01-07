@@ -1,11 +1,15 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
+import com.fasterxml.jackson.annotation.*;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="username", scope = String.class)
 @Entity(name="user")
-public class User {
+public class User implements Serializable{
 
     @Id
     private String username; //email
@@ -13,6 +17,7 @@ public class User {
     private boolean enable;
 
     @OneToMany(mappedBy = "user")
+    @JsonBackReference
     private Set<ProductUser> productUsers;
 
     @ManyToMany

@@ -1,16 +1,23 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.*;
+import com.mysql.jdbc.Blob;
+import org.hibernate.annotations.Type;
 
+import javax.persistence.*;
+import java.io.Serializable;
+
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity(name = "document")
-public class Document {
+public class Document implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String fileName;
-    private String extension;
-    private String type;
+
+    private byte[] file;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "productUser_id")
@@ -36,27 +43,21 @@ public class Document {
         this.fileName = fileName;
     }
 
-    public String getExtension() {
-        return extension;
-    }
-
-    public void setExtension(String extension) {
-        this.extension = extension;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public ProductUser getProductUser() {
         return productUser;
     }
 
+
+
     public void setProductUser(ProductUser productUser) {
         this.productUser = productUser;
+    }
+
+    public byte[] getFile() {
+        return file;
+    }
+
+    public void setFile(byte[] file) {
+        this.file = file;
     }
 }

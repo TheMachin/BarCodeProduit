@@ -37,8 +37,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/v1/product/","/v1/user").permitAll()
-                .antMatchers("/v1/user/**").access("hasRole('USER')")
+                .antMatchers("/v1/products","/v1/users").permitAll()
+                .antMatchers("/v1/users/**").access("hasRole('USER')")
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(authEntryPoint);

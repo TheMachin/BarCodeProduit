@@ -1,10 +1,15 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
+import com.fasterxml.jackson.annotation.*;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Set;
 
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity(name = "shop")
-public class Shop {
+public class Shop implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,14 +18,11 @@ public class Shop {
     private String address;
     private boolean online;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "purchaseLocation")
     private Set<ProductUser> soldProducts;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "compagny_id")
-    private Compagny compagny;
-
-    private Shop(){
+    public Shop(){
 
     }
 
@@ -70,13 +72,5 @@ public class Shop {
 
     public void setSoldProducts(Set<ProductUser> soldProducts) {
         this.soldProducts = soldProducts;
-    }
-
-    public Compagny getCompagny() {
-        return compagny;
-    }
-
-    public void setCompagny(Compagny compagny) {
-        this.compagny = compagny;
     }
 }
