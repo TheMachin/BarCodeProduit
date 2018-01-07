@@ -19,6 +19,7 @@ public class Document implements Serializable{
 
     private byte[] file;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "productUser_id")
     private ProductUser productUser;
