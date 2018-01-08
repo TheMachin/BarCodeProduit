@@ -76,13 +76,17 @@ public class UserController {
 
     /**
      * Create user
-     * @param user (username, password)
      * @param ucBuilder
      * @return
      */
     @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public ResponseEntity<?> createUser(@RequestBody User user, UriComponentsBuilder ucBuilder){
+    public ResponseEntity<?> createUser(@RequestParam(name = "email", required = true) String username,
+                                        @RequestParam(name = "password", required = true) String password,
+                                        UriComponentsBuilder ucBuilder){
         logger.info("Creating user ");
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
         //user exist
         if(userService.getUser(user.getUsername()) != null){
             logger.error("user exist");
@@ -102,19 +106,23 @@ public class UserController {
 
     /**
      * Update user password
-     * @param user
      * @param ucBuilder
      * @return
      */
     @RequestMapping(value = "/users", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateUser(@RequestBody User user,  UriComponentsBuilder ucBuilder){
+    public ResponseEntity<?> updateUser(@RequestParam(name = "email", required = true) String username,
+                                        @RequestParam(name = "password", required = true) String password,
+                                        UriComponentsBuilder ucBuilder){
         logger.info("Update User");
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
         //search user
         User userActual = userService.getUser(user.getUsername());
         //user not exist
         if(userActual == null){
             logger.error("user not found");
-            return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>( "User not found.", HttpStatus.NO_CONTENT);
         }
         //change password
         userActual.setPassword(user.getPassword());
@@ -183,15 +191,15 @@ public class UserController {
         return new ResponseEntity<ProductUser>(productuserCreated, HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/users/products", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateUserProduct(@RequestBody ProductUser productUser){
+    @RequestMapping(value = "/users/products/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<?> updateUserProduct(@RequestBody ProductUser productUser, @PathVariable String id){
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
         if(user == null){
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
-        ProductUser old = productUserService.findOne(productUser.getId());
+        ProductUser old = productUserService.findOne(Long.parseLong(id));
         if(old == null){
             logger.error("product user not found");
             return new ResponseEntity<String>( "Id not found.", HttpStatus.NOT_FOUND);
@@ -384,6 +392,12 @@ public class UserController {
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
+        if(productUser == null){
+            return new ResponseEntity<String>("Id product not found", HttpStatus.CONFLICT);
+        }
+        if(productUser.getPurchaseLocation() != null){
+            return new ResponseEntity<String>("Location shop is alreadyExist", HttpStatus.CONFLICT);
+        }
         if(productUser != null && shop != null) {
             shop = productUserService.saveShop(shop, productUser);
             return new ResponseEntity<Shop>(shop, HttpStatus.CREATED);
@@ -392,8 +406,8 @@ public class UserController {
         }
     }
 
-    @RequestMapping(value = "/users/products/{id}/shops", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateLocatedShopProductOfUser(@PathVariable String id, @RequestBody Shop shop){
+    @RequestMapping(value = "/users/products/{id}/shops/{idShop}", method = RequestMethod.PUT)
+    public ResponseEntity<?> updateLocatedShopProductOfUser(@PathVariable String id, @PathVariable String idShop, @RequestBody Shop shop){
         logger.info("update a located shop of productUser");
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());

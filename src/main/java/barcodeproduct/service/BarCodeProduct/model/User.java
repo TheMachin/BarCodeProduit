@@ -13,7 +13,9 @@ public class User implements Serializable{
 
     @Id
     private String username; //email
+    @JsonIgnore
     private String password;
+    @JsonIgnore
     private boolean enable;
 
     @OneToMany(mappedBy = "user")

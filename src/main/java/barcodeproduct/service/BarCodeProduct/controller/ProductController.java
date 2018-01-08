@@ -87,11 +87,11 @@ public class ProductController {
         return new ResponseEntity<String>( "Create product "+ product.getId() +".", HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/products", method = RequestMethod.PUT)
-    public ResponseEntity updateProduct(@RequestBody Product product, UriComponentsBuilder ucBuilder){
+    @RequestMapping(value = "/products/{gtin}", method = RequestMethod.PUT)
+    public ResponseEntity updateProduct(@RequestBody Product product, @PathVariable String gtin, UriComponentsBuilder ucBuilder){
         logger.info("update product");
         //check if already exist
-        Product productCheck = productService.getProductByGtin(product.getId());
+        Product productCheck = productService.getProductByGtin(Long.parseLong(gtin));
         if(productCheck == null){
             logger.error("product not exists");
             return new ResponseEntity<String>( "Unable to update product "+ product.getId() +" not exist.", HttpStatus.NO_CONTENT);
