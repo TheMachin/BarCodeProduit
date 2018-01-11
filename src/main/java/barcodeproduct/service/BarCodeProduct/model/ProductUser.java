@@ -1,15 +1,14 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import barcodeproduct.service.BarCodeProduct.model.serializer.ProductSerializer;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Entity(name = "productUser")
 public class ProductUser implements Serializable{
 
@@ -30,14 +29,27 @@ public class ProductUser implements Serializable{
     private Set<Document> documents;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonSerialize(using = ProductSerializer.class)
     private Product gtin;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "soldProducts_id")
     private Shop purchaseLocation;
 
-    public ProductUser(){
+    public ProductUser() {
+    }
 
+    @JsonCreator
+    public ProductUser(@JsonProperty("name") String name, @JsonProperty("price") float price, @JsonProperty("datePurchase") Date datePurchase, @JsonProperty("dateEndCommercialWarranty") Date dateEndCommercialWarranty, @JsonProperty("dateEndConstructorWarranty") Date dateEndConstructorWarranty, @JsonProperty("user") User user, @JsonProperty("documents") Set<Document> documents, @JsonProperty("gtin") Product gtin, @JsonProperty("purchaseLocation") Shop purchaseLocation) {
+        this.name = name;
+        this.price = price;
+        this.datePurchase = datePurchase;
+        this.dateEndCommercialWarranty = dateEndCommercialWarranty;
+        this.dateEndConstructorWarranty = dateEndConstructorWarranty;
+        this.user = user;
+        this.documents = documents;
+        this.gtin = gtin;
+        this.purchaseLocation = purchaseLocation;
     }
 
     public Long getId() {

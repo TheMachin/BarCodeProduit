@@ -17,6 +17,7 @@ public class Document implements Serializable{
     private Long id;
     private String fileName;
 
+    @JsonIgnore
     private byte[] file;
 
     @JsonIgnore

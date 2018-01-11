@@ -64,6 +64,15 @@ public class ProductUserServiceImpl implements ProductUserService {
     }
 
     @Override
+    public void delete(ProductUser productUser) {
+        for(Document document : productUser.getDocuments()){
+            document.setProductUser(null);
+            documentQuery.delete(document.getId());
+        }
+        productUserQuery.delete(productUser.getId());
+    }
+
+    @Override
     public ProductUser update(ProductUser old, ProductUser productUser) {
 
         if(productUser.getId() == null || productUser.getId() != old.getId()){

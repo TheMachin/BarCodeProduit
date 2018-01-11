@@ -14,8 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
+import javax.annotation.Resource;
+import java.io.*;
 import java.sql.Blob;
 import java.util.List;
 import java.util.Set;
@@ -169,6 +172,24 @@ public class UserController {
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
         if(productUser != null) {
             return new ResponseEntity<ProductUser>(productUser, HttpStatus.OK);
+        }
+        return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = "/users/products/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> removeOneProductOfUser(@PathVariable String id){
+        logger.info("delete one user's product");
+        User user = userService.getUser(getCurrentNameUser());
+        logger.info(user.getUsername());
+        if(user == null){
+            logger.error("user not found");
+            return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
+        }
+        ProductUser productUser = productUserService.findOne(Long.parseLong(id));
+
+        if(productUser != null) {
+            productUserService.delete(productUser);
+            return new ResponseEntity<String>("delete", HttpStatus.OK);
         }
         return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
     }
@@ -366,6 +387,34 @@ public class UserController {
         return new ResponseEntity<String>("", HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/users/products/{id}/documents/{idDoc}/download", method = RequestMethod.GET)
+    public ResponseEntity<?> downloadFile(@PathVariable String id, @PathVariable String idDoc){
+        logger.info("download file");
+        User user = userService.getUser(getCurrentNameUser());
+        logger.info(user.getUsername());
+        if(user == null){
+            logger.error("user not found");
+            return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
+        }
+        ProductUser productUser = productUserService.findOne(Long.parseLong(id));
+        if(productUser != null) {
+            for(Document document : productUser.getDocuments()){
+                if(document.getId().equals(Long.parseLong(idDoc))){
+
+                    ByteArrayResource resource = new ByteArrayResource(document.getFile());
+                    HttpHeaders headers = new HttpHeaders(); headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+document.getFileName());
+
+                    return ResponseEntity.ok()
+                            .header(String.valueOf(headers))
+                            .contentLength(document.getFile().length)
+                            .contentType(MediaType.parseMediaType("application/octet-stream"))
+                            .body(resource);
+                }
+            }
+        }
+        return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
+    }
+
     @RequestMapping(value = "/users/products/{id}/shops", method = RequestMethod.GET)
     public ResponseEntity<?> getLocatedShopProductOfUser(@PathVariable String id){
         logger.info("get a shop of productUser");
@@ -393,7 +442,7 @@ public class UserController {
         }
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
         if(productUser == null){
-            return new ResponseEntity<String>("Id product not found", HttpStatus.CONFLICT);
+            return new ResponseEntity<String>("Id product not found", HttpStatus.NOT_FOUND);
         }
         if(productUser.getPurchaseLocation() != null){
             return new ResponseEntity<String>("Location shop is alreadyExist", HttpStatus.CONFLICT);

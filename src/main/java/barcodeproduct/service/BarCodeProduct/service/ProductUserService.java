@@ -12,6 +12,7 @@ public interface ProductUserService {
 
     public ProductUser save(ProductUser productUser);
     public ProductUser findOne(Long id);
+    public void delete(ProductUser productUser);
     public ProductUser update(ProductUser old, ProductUser productUser);
     public Document insertDocument(Document document);
     public Document findOneDocument(Long id);
