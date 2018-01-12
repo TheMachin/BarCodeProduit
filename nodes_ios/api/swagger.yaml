@@ -17,7 +17,7 @@ tags:
 - name: "shop"
   description: "online or address shop"
 - name: "document"
-  description: "document of user's product"
+  description: "Documents from a user product"
 - name: "compagny"
   description: "brand of product"
 schemes:
@@ -383,8 +383,8 @@ paths:
     get:
       tags:
       - "document"
-      summary: "get all document of user's product"
-      description: "Get all document of user's product"
+      summary: "get all document from an user product"
+      description: "Get all document from an user product"
       operationId: "usersProductsIdDocumentsGET"
       parameters:
       - name: "id"
@@ -434,8 +434,8 @@ paths:
     get:
       tags:
       - "document"
-      summary: "get a document of user's product"
-      description: "a all document of user's product"
+      summary: "get a document from an user product"
+      description: "a all document from an user product"
       operationId: "usersProductsIdDocumentsIdDocGET"
       parameters:
       - name: "id"
@@ -518,8 +518,8 @@ paths:
     get:
       tags:
       - "document"
-      summary: "download a document of user's product"
-      description: "download document of user's product"
+      summary: "download a document from an user product"
+      description: "download document from an user product"
       operationId: "usersProductsIdDocumentsidDocDownloadGET"
       parameters:
       - name: "id"

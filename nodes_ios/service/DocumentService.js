@@ -2,8 +2,8 @@
 
 
 /**
- * get all document of user's product
- * Get all document of user's product
+ * get all document from an user product
+ * Get all document from an user product
  *
  * id String 
  * returns Document
@@ -40,8 +40,8 @@ exports.usersProductsIdDocumentsIdDocDELETE = function(id,idDoc) {
 
 
 /**
- * get a document of user's product
- * a all document of user's product
+ * get a document from an user product
+ * a all document from an user product
  *
  * id String 
  * idDoc String 
@@ -115,8 +115,8 @@ exports.usersProductsIdDocumentsPOST = function(id,file,fileName) {
 
 
 /**
- * download a document of user's product
- * download document of user's product
+ * download a document from an user product
+ * download document from an user product
  *
  * id String 
  * idDoc String 
