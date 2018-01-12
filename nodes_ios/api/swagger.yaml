@@ -1,0 +1,766 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "BarCodeProduct"
+  termsOfService: "not term"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8088"
+basePath: "/v1/"
+tags:
+- name: "products"
+  description: "Operations about user"
+- name: "user"
+  description: "Operations about user"
+- name: "shop"
+  description: "online or address shop"
+- name: "document"
+  description: "document of user's product"
+- name: "compagny"
+  description: "brand of product"
+schemes:
+- "http"
+paths:
+  /products:
+    post:
+      tags:
+      - "products"
+      summary: "Add a new product"
+      operationId: "addPet"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Product object to save in a db"
+        required: true
+        schema:
+          $ref: "#/definitions/Product"
+      responses:
+        201:
+          description: "Created product {id}."
+        409:
+          description: "Unable to create product {id} already exist."
+      x-swagger-router-controller: "Products"
+  /products/{gtin}:
+    get:
+      tags:
+      - "products"
+      summary: "Find product by gtin"
+      description: "Find an existing product from db"
+      operationId: "productsGtinGET"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "gtin"
+        in: "path"
+        description: "ID of pet to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        204:
+          description: "Product not found"
+      x-swagger-router-controller: "Products"
+    put:
+      tags:
+      - "products"
+      summary: "Update an product"
+      operationId: "updateProduct"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "gtin"
+        in: "path"
+        description: "ID of pet to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/Product"
+      responses:
+        200:
+          description: "product object"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
+        400:
+          description: "Invalid ID supplied"
+        204:
+          description: "Unable to update product {id} not found."
+        404:
+          description: "Unable to update product {id}."
+      x-swagger-router-controller: "Products"
+  /users:
+    post:
+      tags:
+      - "user"
+      summary: "Create user"
+      description: "Creating a user."
+      operationId: "usersPOST"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "email"
+        in: "formData"
+        description: "Email of user"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "formData"
+        description: "Password of user"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "201 created"
+        409:
+          description: "Unable to create user {username} already exist."
+        406:
+          description: "Unable to create user {username} password is missing."
+      x-swagger-router-controller: "User"
+    put:
+      tags:
+      - "user"
+      summary: "Update user"
+      description: "Update a user."
+      operationId: "usersPUT"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "email"
+        in: "formData"
+        description: "Email of user"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "formData"
+        description: "Password of user"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "User updated"
+        204:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+  /user/{username}/:
+    get:
+      tags:
+      - "user"
+      summary: "Get user by user name"
+      operationId: "getUserByName"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "The name that needs to be fetched. Use user1 for testing."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "User object"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+  /users/products:
+    get:
+      tags:
+      - "user"
+      summary: "get all products of user"
+      description: "Get all product of user"
+      operationId: "usersProductsGET"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ProductUser"
+        404:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+    post:
+      tags:
+      - "user"
+      summary: "add a product to a user"
+      description: "Add a product to a user"
+      operationId: "usersProductsPOST"
+      parameters:
+      - in: "body"
+        name: "formPutProductUser"
+        required: false
+        schema:
+          $ref: "#/definitions/formPutProductUser"
+      responses:
+        201:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ProductUser"
+        404:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+  /users/products/{id}:
+    get:
+      tags:
+      - "user"
+      summary: "get a product of user by id"
+      description: "Get a product of user by id"
+      operationId: "usersProductsIdGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ProductUser"
+        204:
+          description: "No content"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+    put:
+      tags:
+      - "user"
+      summary: "update a product to a user"
+      description: "Update a product to a user"
+      operationId: "usersProductsIdPUT"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "formPutProductUser"
+        required: false
+        schema:
+          $ref: "#/definitions/formPutProductUser_1"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ProductUser"
+        404:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+    delete:
+      tags:
+      - "user"
+      summary: "delete a product of user by id"
+      description: "delete a product of user by id"
+      operationId: "usersProductsIdDELETE"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "delete"
+        204:
+          description: "No content"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "User"
+  /users/products/{id}/shops:
+    get:
+      tags:
+      - "shop"
+      summary: "get a location shop of product"
+      description: "Get a location shop of product"
+      operationId: "usersProductsIdShopsGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Shop object"
+          schema:
+            $ref: "#/definitions/Shop"
+        204:
+          description: "Not found"
+        404:
+          description: "User not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Shop"
+    post:
+      tags:
+      - "shop"
+      summary: "add or create a new shop for a product"
+      description: "Add or create a new shop for a product"
+      operationId: "usersProductsIdShopsPOST"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "formPostShop"
+        required: false
+        schema:
+          $ref: "#/definitions/formPostShop"
+      responses:
+        201:
+          description: "Shop created"
+          schema:
+            $ref: "#/definitions/Shop"
+        404:
+          description: "User or Id Product of user not found"
+        409:
+          description: "Location shop is already exist"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Shop"
+  /users/products/{id}/shops/{idShop}:
+    put:
+      tags:
+      - "shop"
+      summary: "update a new shop for a product"
+      description: "Update a new shop for a product"
+      operationId: "usersProductsIdShopsIdShopPUT"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "idShop"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "formPostShop"
+        required: false
+        schema:
+          $ref: "#/definitions/formPostShop_1"
+      responses:
+        200:
+          description: "Shop updated"
+          schema:
+            $ref: "#/definitions/Shop"
+        404:
+          description: "User or Id Product of user not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Shop"
+  /users/products/{id}/documents:
+    get:
+      tags:
+      - "document"
+      summary: "get all document of user's product"
+      description: "Get all document of user's product"
+      operationId: "usersProductsIdDocumentsGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Document"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+    post:
+      tags:
+      - "document"
+      summary: "create a new document"
+      description: "Create a new document with a file and a filename"
+      operationId: "usersProductsIdDocumentsPOST"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "file"
+        in: "formData"
+        description: "the uploaded file data"
+        required: true
+        type: "file"
+      - name: "fileName"
+        in: "formData"
+        description: "the name of file data"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "document object"
+          schema:
+            $ref: "#/definitions/Document"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+  /users/products/{id}/documents/{idDoc}:
+    get:
+      tags:
+      - "document"
+      summary: "get a document of user's product"
+      description: "a all document of user's product"
+      operationId: "usersProductsIdDocumentsIdDocGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "idDoc"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Document"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+    put:
+      tags:
+      - "document"
+      summary: "Update a new document"
+      description: "Update a document with a file and a filename"
+      operationId: "usersProductsIdDocumentsIdDocPUT"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "idDoc"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "file"
+        in: "formData"
+        description: "the uploaded file data"
+        required: true
+        type: "file"
+      - name: "fileName"
+        in: "formData"
+        description: "the name of file data"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "updated object"
+          schema:
+            $ref: "#/definitions/Document"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+    delete:
+      tags:
+      - "document"
+      summary: "Update a new document"
+      description: "Update a document with a file and a filename"
+      operationId: "usersProductsIdDocumentsIdDocDELETE"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "idDoc"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "User or document not found"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+  /users/products/{id}/documents{idDoc}/download:
+    get:
+      tags:
+      - "document"
+      summary: "download a document of user's product"
+      description: "download document of user's product"
+      operationId: "usersProductsIdDocumentsidDocDownloadGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "idDoc"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+      security:
+      - basicAuth: []
+      x-swagger-router-controller: "Document"
+securityDefinitions:
+  basicAuth:
+    type: "basic"
+definitions:
+  Compagny:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+    example:
+      name: "name"
+    xml:
+      name: "Category"
+  User:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+        description: "email"
+    example:
+      username: "username"
+  Shop:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      city:
+        type: "string"
+      address:
+        type: "string"
+      online:
+        type: "boolean"
+    example:
+      address: "address"
+      city: "city"
+      name: "name"
+      online: true
+      id: 1
+    xml:
+      name: "shop"
+  Product:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      compagny:
+        $ref: "#/definitions/Compagny"
+    example:
+      compagny:
+        name: "name"
+      name: "name"
+      id: 0
+    xml:
+      name: "Product"
+  DocumentJson:
+    type: "object"
+    required:
+    - "file"
+    - "fileName"
+    properties:
+      id:
+        type: "integer"
+      fileName:
+        type: "string"
+        example: "filename.jpg"
+      file:
+        type: "string"
+  Document:
+    type: "object"
+    required:
+    - "fileName"
+    properties:
+      id:
+        type: "integer"
+      fileName:
+        type: "string"
+        example: "filename.jpg"
+    example:
+      fileName: "filename.jpg"
+      id: 6
+  Gtin:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        example: 3017760756198
+        description: "gtin of product"
+  ProductUser:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      price:
+        type: "string"
+        description: "float"
+      datePurchase:
+        type: "string"
+        description: "date"
+      dateEndCommercialWarranty:
+        type: "string"
+        description: "date"
+      dateEndConstructorWarranty:
+        type: "string"
+        description: "date"
+      user:
+        $ref: "#/definitions/User"
+      documents:
+        $ref: "#/definitions/Document"
+      gtin:
+        $ref: "#/definitions/Product"
+      purchaseLocation:
+        $ref: "#/definitions/Shop"
+    example:
+      gtin:
+        compagny:
+          name: "name"
+        name: "name"
+        id: 0
+      purchaseLocation:
+        address: "address"
+        city: "city"
+        name: "name"
+        online: true
+        id: 1
+      documents:
+        fileName: "filename.jpg"
+        id: 6
+      price: "price"
+      name: "name"
+      datePurchase: "datePurchase"
+      id: 0
+      user:
+        username: "username"
+      dateEndConstructorWarranty: "dateEndConstructorWarranty"
+      dateEndCommercialWarranty: "dateEndCommercialWarranty"
+  inline_response_200:
+    properties:
+      gtin:
+        type: "integer"
+        example: 3017760756198
+      name:
+        type: "string"
+        example: "granola gros éclat de chocolat"
+      compagny:
+        type: "string"
+        example: "Lu"
+    example:
+      compagny: "Lu"
+      gtin: 3017760756198
+      name: "granola gros éclat de chocolat"
+  formPutProductUser:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "granola gros éclat de chocolat"
+        description: "name of product"
+      price:
+        type: "string"
+        description: "float"
+      datePurchase:
+        type: "string"
+        description: "date"
+      dateEndCommercialWarranty:
+        type: "string"
+        description: "date"
+      dateEndConstructorWarranty:
+        type: "string"
+        description: "date"
+      gtin:
+        $ref: "#/definitions/Product"
+  formPutProductUser_1:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "granola gros éclat de chocolat"
+        description: "name of product"
+      price:
+        type: "string"
+        description: "float"
+      datePurchase:
+        type: "string"
+        description: "date"
+      dateEndCommercialWarranty:
+        type: "string"
+        description: "date"
+      dateEndConstructorWarranty:
+        type: "string"
+        description: "date"
+      gtin:
+        $ref: "#/definitions/Product"
+  formPostShop:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      city:
+        type: "string"
+      address:
+        type: "string"
+      online:
+        type: "boolean"
+  formPostShop_1:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      city:
+        type: "string"
+      address:
+        type: "string"
+      online:
+        type: "boolean"
+externalDocs:
+  description: "Service REST"
+  url: "localhost:8088"
