@@ -207,7 +207,19 @@ public class UserController {
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
+
+        if(productUser.getGtin() == null){
+            logger.error("gtin not found");
+            return new ResponseEntity<String>( "Product object not found.", HttpStatus.NOT_FOUND);
+        }
+
         productUser.setUser(user);
+        if(productUser.getPurchaseLocation() == null){
+            Shop shop = new Shop();
+            productUser.setPurchaseLocation(shop);
+        }
+
+
         ProductUser productuserCreated = productUserService.save(productUser);
         return new ResponseEntity<ProductUser>(productuserCreated, HttpStatus.CREATED);
     }
@@ -225,14 +237,24 @@ public class UserController {
             logger.error("product user not found");
             return new ResponseEntity<String>( "Id not found.", HttpStatus.NOT_FOUND);
         }
+
+        //update information in existing productUser
         old.setPrice(productUser.getPrice());
         old.setName(productUser.getName());
         old.setDatePurchase(productUser.getDatePurchase());
         old.setDateEndConstructorWarranty(productUser.getDateEndConstructorWarranty());
         old.setDateEndCommercialWarranty(productUser.getDateEndCommercialWarranty());
+
+        //check if shop exist
+        if(productUser.getPurchaseLocation() != null){
+            if(productUser.getPurchaseLocation().getId() == null){
+                return new ResponseEntity<String>("id shop is null", HttpStatus.NO_CONTENT);
+            }
+            old.setPurchaseLocation(productUser.getPurchaseLocation());
+        }
         ProductUser updated = productUserService.save(old);
         if(updated == null){
-            return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<String>("Unable to update", HttpStatus.NO_CONTENT);
         }
 
         return new ResponseEntity<ProductUser>(old, HttpStatus.OK);
