@@ -54,6 +54,14 @@ public class ProductUserServiceImpl implements ProductUserService {
             product = productService.insert(product);
         }
         productUser.setGtin(product);
+        //if a shop is not null, we save it
+        if(productUser.getPurchaseLocation() != null){
+            Shop shop = saveShop(productUser.getPurchaseLocation(), productUser);
+            //if fail to save, put shop at null
+            if(shop == null){
+                productUser.setPurchaseLocation(null);
+            }
+        }
 
         return productUserQuery.save(productUser);
     }
