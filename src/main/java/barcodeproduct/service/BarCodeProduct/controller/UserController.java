@@ -329,19 +329,13 @@ public class UserController {
 
             document.setFileName(fileName);
             document.setFile(fileByte);
-            int size = fileByte.length;
-            logger.info("Size of byte[] + "+size);
-            if(size>1048580){
-                return new ResponseEntity<String>("Size of file must be less than 1.5 Mo", HttpStatus.NO_CONTENT);
-            }
+
             Document documentCreated = productUserService.insertDocument(document);
             if(documentCreated != null){
                 return new ResponseEntity<Document>(documentCreated, HttpStatus.CREATED);
             }else{
                 return new ResponseEntity<String>("Fail to insert document", HttpStatus.NO_CONTENT);
             }
-            //Document documentCreated = productUserService.insertDocument(document);
-            //return new ResponseEntity<Document>(documentCreated, HttpStatus.OK);
         }
         return new ResponseEntity<String>("Id not found", HttpStatus.NO_CONTENT);
     }
