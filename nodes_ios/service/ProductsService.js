@@ -19,16 +19,24 @@ exports.addPet = function(body) {
  * Find an existing product from db
  *
  * gtin Long ID of pet to update
- * returns inline_response_200
+ * returns List
  **/
 exports.productsGtinGET = function(gtin) {
   return new Promise(function(resolve, reject) {
     var examples = {};
-    examples['application/json'] = {
-  "compagny" : "Lu",
-  "gtin" : 3017760756198,
-  "name" : "granola gros éclat de chocolat"
-};
+    examples['application/json'] = [ {
+  "compagny" : {
+    "name" : "name"
+  },
+  "name" : "name",
+  "id" : 0
+}, {
+  "compagny" : {
+    "name" : "name"
+  },
+  "name" : "name",
+  "id" : 0
+} ];
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {

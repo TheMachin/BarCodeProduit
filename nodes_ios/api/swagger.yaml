@@ -66,7 +66,9 @@ paths:
         200:
           description: "successful operation"
           schema:
-            $ref: "#/definitions/inline_response_200"
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
         204:
           description: "Product not found"
       x-swagger-router-controller: "Products"
@@ -682,21 +684,6 @@ definitions:
         username: "username"
       dateEndConstructorWarranty: "dateEndConstructorWarranty"
       dateEndCommercialWarranty: "dateEndCommercialWarranty"
-  inline_response_200:
-    properties:
-      gtin:
-        type: "integer"
-        example: 3017760756198
-      name:
-        type: "string"
-        example: "granola gros éclat de chocolat"
-      compagny:
-        type: "string"
-        example: "Lu"
-    example:
-      compagny: "Lu"
-      gtin: 3017760756198
-      name: "granola gros éclat de chocolat"
   formPutProductUser:
     type: "object"
     properties:
