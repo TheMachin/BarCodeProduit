@@ -386,7 +386,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "/users/products/{id}/documents/{idDoc}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteDocumentsProductOfUser(@PathVariable String id, @PathVariable String idDoc, @RequestBody Document document){
+    public ResponseEntity<?> deleteDocumentsProductOfUser(@PathVariable String id, @PathVariable String idDoc){
         logger.info("delete document's productUser");
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
