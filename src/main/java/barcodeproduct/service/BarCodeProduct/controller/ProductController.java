@@ -67,7 +67,7 @@ public class ProductController {
             return new ResponseEntity<Object>(null, HttpStatus.NO_CONTENT);
         }
         //ajout des infos dans du JSON
-        jsonReturn.addProperty("gtin",gtin);
+        jsonReturn.addProperty("gtin",Long.parseLong(gtin));
         jsonReturn.addProperty("name",name);
         jsonReturn.addProperty("compagny",compagnyName);
 
