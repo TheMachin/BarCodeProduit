@@ -60,18 +60,19 @@ public class ProductController {
                 compagnyName = jsonObject.get("pl-brand-name").getAsString();
                 logger.info("product "+name);
                 logger.info("form "+compagnyName);
+                product.setId(Long.parseLong(gtin));
+                product.setName(name);
+                Compagny compagny = new Compagny();
+                compagny.setName(compagnyName);
+                product.setCompagny(compagny);
             }
         }
         //si on a aucune info on retourne un 204 NO CONTENT
         if(name.equals("")&&compagnyName.equals("")){
             return new ResponseEntity<Object>(null, HttpStatus.NO_CONTENT);
         }
-        //ajout des infos dans du JSON
-        jsonReturn.addProperty("gtin",Long.parseLong(gtin));
-        jsonReturn.addProperty("name",name);
-        jsonReturn.addProperty("compagny",compagnyName);
-
-        return new ResponseEntity<String>(jsonReturn.toString(), HttpStatus.OK);
+        //envoie du json avec l'objet product
+        return new ResponseEntity<Product>(product, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/products", method = RequestMethod.POST)
