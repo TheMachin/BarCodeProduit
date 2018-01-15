@@ -46,7 +46,7 @@ public class UserController {
 
     /**
      * Get all user
-     * @return
+     * @return lisrt of user or no content if the list is empty
      */
     @RequestMapping(value = "/users/", method = RequestMethod.GET)
     public ResponseEntity<?> getAllUser(){
@@ -63,7 +63,7 @@ public class UserController {
     /**
      * Get one user
      * @param username
-     * @return
+     * @return a user
      */
     @RequestMapping(value = "/users/{username}/", method = RequestMethod.GET)
     public ResponseEntity<?> getUser(@PathVariable String username){
@@ -79,6 +79,8 @@ public class UserController {
 
     /**
      * Create user
+     * @requestParam email
+     * @requestParam password
      * @param ucBuilder
      * @return
      */
@@ -90,15 +92,24 @@ public class UserController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
-        //user exist
+        /**
+         * Check if user exist
+         */
         if(userService.getUser(user.getUsername()) != null){
             logger.error("user exist");
             return new ResponseEntity<String>( "Unable to create user "+user.getUsername() +" already exist.", HttpStatus.CONFLICT);
         }
+        /**
+         * if the password is null or empty
+         */
         if(user.getPassword() == null || user.getPassword().isEmpty()){
             logger.error("user password missing");
             return new ResponseEntity<String>( "Unable to create user "+user.getUsername() +" password is missing.", HttpStatus.BAD_REQUEST);
         }
+        /**
+         * enable user
+         * save user
+         */
         user.setEnable(true);
         userService.save(user);
         logger.info("user created");
@@ -108,7 +119,9 @@ public class UserController {
     }
 
     /**
-     * Update user password
+     * Update only password of user
+     * @requestParam email
+     * @requestParam password
      * @param ucBuilder
      * @return
      */
@@ -120,14 +133,20 @@ public class UserController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
-        //search user
+        /**
+         * search user
+         */
         User userActual = userService.getUser(user.getUsername());
-        //user not exist
+        /**
+         * return a no content if user not found
+         */
         if(userActual == null){
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NO_CONTENT);
         }
-        //change password
+        /**
+         * change password and save it
+         */
         userActual.setPassword(user.getPassword());
         userService.save(userActual);
         if(user.getPassword().equals(userActual.getPassword())){
@@ -201,19 +220,33 @@ public class UserController {
      */
     @RequestMapping(value = "/users/products", method = RequestMethod.POST)
     public ResponseEntity<?> createUserProduct(@RequestBody ProductUser productUser){
+        logger.info("insert a product to user");
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
         if(user == null){
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
+
+        if(productUser.getGtin() == null){
+            logger.error("gtin not found");
+            return new ResponseEntity<String>( "Product object not found.", HttpStatus.NOT_FOUND);
+        }
+
         productUser.setUser(user);
+        if(productUser.getPurchaseLocation() == null){
+            Shop shop = new Shop();
+            productUser.setPurchaseLocation(shop);
+        }
+
+
         ProductUser productuserCreated = productUserService.save(productUser);
         return new ResponseEntity<ProductUser>(productuserCreated, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/users/products/{id}", method = RequestMethod.PUT)
     public ResponseEntity<?> updateUserProduct(@RequestBody ProductUser productUser, @PathVariable String id){
+        logger.info("update a product to user");
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
         if(user == null){
@@ -225,14 +258,31 @@ public class UserController {
             logger.error("product user not found");
             return new ResponseEntity<String>( "Id not found.", HttpStatus.NOT_FOUND);
         }
+
+        /**
+         * update information in existing productUser
+         */
         old.setPrice(productUser.getPrice());
         old.setName(productUser.getName());
         old.setDatePurchase(productUser.getDatePurchase());
         old.setDateEndConstructorWarranty(productUser.getDateEndConstructorWarranty());
         old.setDateEndCommercialWarranty(productUser.getDateEndCommercialWarranty());
+
+        /**
+         * //check if shop exist to add it in update
+         */
+        if(productUser.getPurchaseLocation() != null){
+            /**
+             * return a no content if the shop have not an id
+             */
+            if(productUser.getPurchaseLocation().getId() == null){
+                return new ResponseEntity<String>("id shop is null", HttpStatus.NO_CONTENT);
+            }
+            old.setPurchaseLocation(productUser.getPurchaseLocation());
+        }
         ProductUser updated = productUserService.save(old);
         if(updated == null){
-            return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<String>("Unable to update", HttpStatus.NO_CONTENT);
         }
 
         return new ResponseEntity<ProductUser>(old, HttpStatus.OK);
@@ -286,44 +336,65 @@ public class UserController {
         return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * create a new document
+     * @param id of product to user
+     * @param fileName
+     * @param file
+     * @return 201 if the creation is made
+     */
     @RequestMapping(value = "/users/products/{id}/documents", method = RequestMethod.POST)
     public ResponseEntity<?> createDocumentsProductOfUser(@PathVariable String id, @RequestParam String fileName, @RequestParam MultipartFile file){
         logger.info("create document's productUser");
+        /**
+         * get user
+         */
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
         if(user == null){
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
+        /**
+         * get product
+         */
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
         if(productUser != null) {
             Document document = new Document();
             document.setProductUser(productUser);
-
+            /**
+             * check if file exist
+             */
             if(file == null){
+                logger.error("file is not exist to create a new document");
                 return new ResponseEntity<String>("File not found", HttpStatus.NO_CONTENT);
             }
+            /**
+             * convert file to byte and create a new document
+             */
             byte[] fileByte = getByteFromMultipartFile(file);
 
             document.setFileName(fileName);
             document.setFile(fileByte);
-            int size = fileByte.length;
-            logger.info("Size of byte[] + "+size);
-            if(size>1048580){
-                return new ResponseEntity<String>("Size of file must be less than 1.5 Mo", HttpStatus.NO_CONTENT);
-            }
+
             Document documentCreated = productUserService.insertDocument(document);
             if(documentCreated != null){
                 return new ResponseEntity<Document>(documentCreated, HttpStatus.CREATED);
             }else{
                 return new ResponseEntity<String>("Fail to insert document", HttpStatus.NO_CONTENT);
             }
-            //Document documentCreated = productUserService.insertDocument(document);
-            //return new ResponseEntity<Document>(documentCreated, HttpStatus.OK);
         }
         return new ResponseEntity<String>("Id not found", HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * update a document
+     * @param id of product of user
+     * @param idDoc of document
+     * @param file
+     * @param fileName
+     * @return
+     */
     @RequestMapping(value = "/users/products/{id}/documents/{idDoc}", method = RequestMethod.PUT)
     public ResponseEntity<?> updateDocumentsProductOfUser(@PathVariable String id,
                                                           @PathVariable String idDoc,
@@ -349,6 +420,9 @@ public class UserController {
         Document document = new Document();
         document.setProductUser(documentOld.getProductUser());
 
+        /**
+         * convert file to byte if exist
+         */
         byte[] fileByte = null;
         if(file != null){
             fileByte = getByteFromMultipartFile(file);
@@ -357,11 +431,7 @@ public class UserController {
 
         document.setFileName(fileName);
         document.setFile(fileByte);
-        int size = fileByte.length;
-        logger.info("Size of byte[] + "+size);
-        if(size>1048580){
-            return new ResponseEntity<String>("Size of file must be less than 1.5 Mo", HttpStatus.NO_CONTENT);
-        }
+
         Document documentUpdated = productUserService.updateDocument(documentOld, document);
         if(documentUpdated != null){
             return new ResponseEntity<Document>(documentUpdated, HttpStatus.OK);
@@ -369,8 +439,14 @@ public class UserController {
         return new ResponseEntity<String>("Unable to update document", HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * delete document
+     * @param id product of user
+     * @param idDoc document
+     * @return 200 if the delete is a success
+     */
     @RequestMapping(value = "/users/products/{id}/documents/{idDoc}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteDocumentsProductOfUser(@PathVariable String id, @PathVariable String idDoc, @RequestBody Document document){
+    public ResponseEntity<?> deleteDocumentsProductOfUser(@PathVariable String id, @PathVariable String idDoc){
         logger.info("delete document's productUser");
         User user = userService.getUser(getCurrentNameUser());
         logger.info(user.getUsername());
@@ -378,15 +454,28 @@ public class UserController {
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
+        /**
+         * find a document
+         */
         Document documentOld = productUserService.findOneDocument(Long.parseLong(idDoc));
         if(documentOld == null){
             logger.error("document not found");
             return new ResponseEntity<String>( "document not found.", HttpStatus.NOT_FOUND);
         }
-        productUserService.deleteDocument(documentOld);
-        return new ResponseEntity<String>("", HttpStatus.OK);
+
+        if(documentOld.getProductUser().getId().equals(id)){
+            productUserService.deleteDocument(documentOld);
+            return new ResponseEntity<String>("", HttpStatus.OK);
+        }
+        return new ResponseEntity<String>("Not document of product user",HttpStatus.CONFLICT);
     }
 
+    /**
+     * Download a document
+     * @param id
+     * @param idDoc
+     * @return
+     */
     @RequestMapping(value = "/users/products/{id}/documents/{idDoc}/download", method = RequestMethod.GET)
     public ResponseEntity<?> downloadFile(@PathVariable String id, @PathVariable String idDoc){
         logger.info("download file");
@@ -398,7 +487,13 @@ public class UserController {
         }
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
         if(productUser != null) {
+            /**
+             * search a document in the list
+             */
             for(Document document : productUser.getDocuments()){
+                /**
+                 * document find and prepare to download
+                 */
                 if(document.getId().equals(Long.parseLong(idDoc))){
 
                     ByteArrayResource resource = new ByteArrayResource(document.getFile());
@@ -415,6 +510,11 @@ public class UserController {
         return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * get a location shop of product where the user bought the product
+     * @param id
+     * @return
+     */
     @RequestMapping(value = "/users/products/{id}/shops", method = RequestMethod.GET)
     public ResponseEntity<?> getLocatedShopProductOfUser(@PathVariable String id){
         logger.info("get a shop of productUser");
@@ -424,6 +524,9 @@ public class UserController {
             logger.error("user not found");
             return new ResponseEntity<String>( "User not found.", HttpStatus.NOT_FOUND);
         }
+        /**
+         * the productUser is attached at one location shop
+         */
         ProductUser productUser = productUserService.findOne(Long.parseLong(id));
         if(productUser != null && productUser.getPurchaseLocation() != null) {
             return new ResponseEntity<Shop>(productUser.getPurchaseLocation(), HttpStatus.OK);
@@ -431,6 +534,12 @@ public class UserController {
         return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * create a shop to attache at a productuser
+     * @param id
+     * @param shop
+     * @return
+     */
     @RequestMapping(value = "/users/products/{id}/shops", method = RequestMethod.POST)
     public ResponseEntity<?> createLocatedShopProductOfUser(@PathVariable String id, @RequestBody Shop shop){
         logger.info("create a located shop of productUser");
@@ -444,6 +553,9 @@ public class UserController {
         if(productUser == null){
             return new ResponseEntity<String>("Id product not found", HttpStatus.NOT_FOUND);
         }
+        /**
+         * if the productuser have an existing location shop
+         */
         if(productUser.getPurchaseLocation() != null){
             return new ResponseEntity<String>("Location shop is alreadyExist", HttpStatus.CONFLICT);
         }
@@ -455,6 +567,13 @@ public class UserController {
         }
     }
 
+    /**
+     * update a shop
+     * @param id
+     * @param idShop
+     * @param shop
+     * @return
+     */
     @RequestMapping(value = "/users/products/{id}/shops/{idShop}", method = RequestMethod.PUT)
     public ResponseEntity<?> updateLocatedShopProductOfUser(@PathVariable String id, @PathVariable String idShop, @RequestBody Shop shop){
         logger.info("update a located shop of productUser");
@@ -488,6 +607,11 @@ public class UserController {
         return user.getUsername();
     }
 
+    /**
+     * convert file to bytes
+     * @param file
+     * @return
+     */
     private byte[] getByteFromMultipartFile(MultipartFile file){
         try {
             return file.getBytes();

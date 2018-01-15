@@ -43,41 +43,65 @@ public class ProductController {
     public ResponseEntity<?> getProductByGtin(@PathVariable String gtin){
         logger.info("Get product "+gtin);
 
-        //on cherche le produit dans notre bdd
+        /**
+         * Search a product in database
+         */
         Product product = productService.getProductByGtin(Long.parseLong(gtin));
         JsonObject jsonReturn = new JsonObject();
         String name = "";
         String compagnyName = "";
-        //si un produit n'existe pas dans notre bdd, on va chercher avec un api
+
         if(product != null) {
             name = product.getName();
             compagnyName = product.getCompagny().getName();
         }else{
+            /**
+             * if not exist in database, search it in API
+             */
             JsonObject jsonObject = productLayer.getProductWithGtin(gtin);
             if(jsonObject != null){
-                //Si un produit existe depuis la bdd de l'api, on récupere les infos
+                /**
+                 * get information of product
+                 */
                 name = jsonObject.get("pl-prod-name").getAsString();
                 compagnyName = jsonObject.get("pl-brand-name").getAsString();
                 logger.info("product "+name);
                 logger.info("form "+compagnyName);
+                /**
+                 * Create a new object product
+                 */
+                product = new Product();
+                product.setId(Long.parseLong(gtin));
+                product.setName(name);
+                Compagny compagny = new Compagny();
+                compagny.setName(compagnyName);
+                product.setCompagny(compagny);
             }
         }
-        //si on a aucune info on retourne un 204 NO CONTENT
+        /**
+         * if a product not exist in database and API, send a NO_CONTENT
+         */
         if(name.equals("")&&compagnyName.equals("")){
             return new ResponseEntity<Object>(null, HttpStatus.NO_CONTENT);
         }
-        //ajout des infos dans du JSON
-        jsonReturn.addProperty("gtin",gtin);
-        jsonReturn.addProperty("name",name);
-        jsonReturn.addProperty("compagny",compagnyName);
-
-        return new ResponseEntity<String>(jsonReturn.toString(), HttpStatus.OK);
+        /**
+         * Send a product
+         */
+        return new ResponseEntity<Product>(product, HttpStatus.OK);
     }
 
+    /**
+     * Create a product
+     * @param product
+     * @param ucBuilder
+     * @return
+     */
     @RequestMapping(value = "/products", method = RequestMethod.POST)
     public ResponseEntity insertProduct(@RequestBody Product product, UriComponentsBuilder ucBuilder){
         logger.info("Create product");
-        //check if already exist
+        /**
+         * check if already exist
+         */
         Product productCheck = productService.getProductByGtin(product.getId());
         if(productCheck != null){
             logger.error("product exist");
@@ -87,17 +111,30 @@ public class ProductController {
         return new ResponseEntity<String>( "Create product "+ product.getId() +".", HttpStatus.CREATED);
     }
 
+    /**
+     * Update a product
+     * @param product
+     * @param gtin id of product
+     * @param ucBuilder
+     * @return
+     */
     @RequestMapping(value = "/products/{gtin}", method = RequestMethod.PUT)
     public ResponseEntity updateProduct(@RequestBody Product product, @PathVariable String gtin, UriComponentsBuilder ucBuilder){
         logger.info("update product");
-        //check if already exist
+        /**
+         * check if already exist
+         */
         Product productCheck = productService.getProductByGtin(Long.parseLong(gtin));
         if(productCheck == null){
             logger.error("product not exists");
             return new ResponseEntity<String>( "Unable to update product "+ product.getId() +" not exist.", HttpStatus.NO_CONTENT);
         }
+        /**
+         * update product
+         */
         Product updated = productService.update(product, productCheck);
         if(updated == null){
+            //unable to update
             logger.error("product not updated");
             return new ResponseEntity<String>( "Unable to update product "+ product.getId() +".", HttpStatus.BAD_REQUEST);
         }
@@ -105,6 +142,11 @@ public class ProductController {
         return new ResponseEntity<Product>( updated, HttpStatus.OK);
     }
 
+    /**
+     * Get all compagnies
+     * @param ucBuilder
+     * @return
+     */
     @RequestMapping(value = "/compagnies", method = RequestMethod.GET)
     public ResponseEntity getAllCompagnies(UriComponentsBuilder ucBuilder){
         logger.info("get all compagnies");
@@ -116,9 +158,18 @@ public class ProductController {
         return new ResponseEntity<List<Compagny>>(compagnyList, HttpStatus.OK);
     }
 
+    /**
+     * Get one compagny
+     * @param name
+     * @param ucBuilder
+     * @return
+     */
     @RequestMapping(value = "/compagnies/{name}", method = RequestMethod.GET)
     public ResponseEntity getOneCompagny(@PathVariable String name ,UriComponentsBuilder ucBuilder){
         logger.info("get one compagny");
+        /**
+         * Get compagny in db
+         */
         Compagny compagny = compagnyService.findOne(name);
         if(compagny == null){
             logger.error("compagnies not exists");
@@ -127,15 +178,27 @@ public class ProductController {
         return new ResponseEntity<Compagny>(compagny, HttpStatus.OK);
     }
 
+    /**
+     * Create a compagny
+     * @param name
+     * @param ucBuilder
+     * @return
+     */
     @RequestMapping(value = "/compagnies", method = RequestMethod.POST)
     public ResponseEntity createCompagny(@RequestBody String name, UriComponentsBuilder ucBuilder){
         logger.info("create compagny");
+        /**
+         * if the name of compagny is null send a NO_CONTENT
+         */
         if(name == null || name.isEmpty()){
             logger.error("not name for compagny");
             return new ResponseEntity<String>( "Unable to find compagny's name.", HttpStatus.NO_CONTENT);
         }
         Compagny compagny = new Compagny();
         compagny.setName(name);
+        /**
+         * insert compagny in db
+         */
         Compagny compagnyCreated = compagnyService.save(compagny);
         return new ResponseEntity<Compagny>(compagnyCreated, HttpStatus.CREATED);
     }

@@ -1,6 +1,7 @@
 package barcodeproduct.service.BarCodeProduct.model;
 
 import barcodeproduct.service.BarCodeProduct.model.serializer.ProductSerializer;
+import barcodeproduct.service.BarCodeProduct.model.serializer.ShopSerializer;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -28,12 +29,17 @@ public class ProductUser implements Serializable{
     @OneToMany(mappedBy = "productUser")
     private Set<Document> documents;
 
+    /**
+     * product object
+     * serialize product to force it to be an object in json
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonSerialize(using = ProductSerializer.class)
     private Product gtin;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "soldProducts_id")
+    @JsonSerialize(using = ShopSerializer.class) //force shop to be an object in json
     private Shop purchaseLocation;
 
     public ProductUser() {
