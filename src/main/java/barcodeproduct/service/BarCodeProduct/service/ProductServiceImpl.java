@@ -28,6 +28,12 @@ public class ProductServiceImpl implements ProductService{
         return productQuery.findOne(gtin);
     }
 
+    /**
+     * Insert a new product
+     * Before to insert, save compagny if exist
+     * @param product
+     * @return
+     */
     @Override
     public Product insert(Product product) {
         if(product == null){

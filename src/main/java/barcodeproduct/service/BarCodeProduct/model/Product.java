@@ -23,7 +23,7 @@ public class Product implements Serializable{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "compagny_id")
-    @JsonSerialize(using = CompagnySerializer.class)
+    @JsonSerialize(using = CompagnySerializer.class) //force compagny to be an object in json
     private Compagny compagny;
 
     public Product(){

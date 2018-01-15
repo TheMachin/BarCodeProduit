@@ -27,6 +27,12 @@ public class ProductUserServiceImpl implements ProductUserService {
     ShopQuery shopQuery;
 
 
+    /**
+     * Save a productUser
+     * Before it, save the product and the shop
+     * @param productUser
+     * @return
+     */
     @Override
     public ProductUser save(ProductUser productUser) {
 
@@ -42,6 +48,10 @@ public class ProductUserServiceImpl implements ProductUserService {
             return null;
         }
 
+        /**
+         * get a product
+         * if exist, save a product else create a new product with the name of productUser
+         */
         Long gtin = productUser.getGtin().getId();
 
         Product product = productQuery.findOne(gtin);
@@ -54,7 +64,10 @@ public class ProductUserServiceImpl implements ProductUserService {
             product = productService.insert(product);
         }
         productUser.setGtin(product);
-        //if a shop is not null, we save it
+
+        /**
+         * if the shop is not null, save it
+         */
         if(productUser.getPurchaseLocation() != null){
             Shop shop = saveShop(productUser.getPurchaseLocation(), productUser);
             //if fail to save, put shop at null

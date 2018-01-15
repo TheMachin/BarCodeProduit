@@ -13,6 +13,9 @@ public class User implements Serializable{
 
     @Id
     private String username; //email
+    /**
+     * ignore password and enable in json
+     */
     @JsonIgnore
     private String password;
     @JsonIgnore

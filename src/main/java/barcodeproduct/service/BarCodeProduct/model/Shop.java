@@ -18,6 +18,9 @@ public class Shop implements Serializable{
     private String address;
     private boolean online;
 
+    /**
+     * ignore productUser object in json to avoid recursive
+     */
     @JsonIgnore
     @OneToMany(mappedBy = "purchaseLocation")
     private Set<ProductUser> soldProducts;
